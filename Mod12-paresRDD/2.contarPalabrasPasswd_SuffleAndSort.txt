@@ -1,0 +1,97 @@
+Contar palabras ordenadas ASCENDENTEMENTE por clave del passwd
+===============================================================
+--> Fases en orden, Map, Suffle and Sort y Reduce
+
+=======
+Spark:
+=======
+// cargamos fichero
+rdd_pwd = sc.textFile("file:/tmp/passwd")
+
+// Fase Map
+// creamos un registro por palabra
+import re
+rdd_palabra = rdd_pwd.flatMap( lambda reg: re.split("\W+",reg) )
+SALIDA: [u'root', u'x', u'0', u'0', u'root']
+
+// clave/valor --> palabra/1
+rdd_uno = rdd_palabra.map( lambda reg: (reg,1) )
+SALIDA:  [(u'root', 1), (u'x', 1), (u'0', 1), (u'0', 1), (u'root', 1)]
+
+// Fase Suffle And Sort
+// Agrupamos por clave.  ( Clave / ARRAY_valores )
+rdd_arrayUnos = rdd_uno.groupByKey()
+SALIDA: [(u'separated', <pyspark.resultiterable.ResultIterable at 0x7fdb555c8dd0>),
+ (u'owner', <pyspark.resultiterable.ResultIterable at 0x7fdb555d70d0>),
+ (u'Privilege', <pyspark.resultiterable.ResultIterable at 0x7fdb555d7110>),
+ (u'485', <pyspark.resultiterable.ResultIterable at 0x7fdb555d7050>),
+ (u'68', <pyspark.resultiterable.ResultIterable at 0x7fdb555d7190>)]
+
+
+// ordenamos por clave
+rdd_ordenado = rdd_arrayUnos.sortByKey()
+SALIDA: [(u'0', <pyspark.resultiterable.ResultIterable at 0x7fdb553d5a90>),
+ (u'1', <pyspark.resultiterable.ResultIterable at 0x7fdb553d5890>),
+ (u'10', <pyspark.resultiterable.ResultIterable at 0x7fdb553d5a50>),
+ (u'100', <pyspark.resultiterable.ResultIterable at 0x7fdb553d5590>),
+ (u'11', <pyspark.resultiterable.ResultIterable at 0x7fdb553d5290>)]
+
+// Fase Reduce
+// Sumamos todos los valores del Array
+def sumar(valores):
+	suma = 0;
+	for valor in valores:
+		suma += valor
+	return suma
+
+rdd_suma_ordenada = rdd_ordenado.mapValues(sumar)
+
+rdd_suma_ordenada.collect()
+[(u'0', 6),
+ (u'1', 2),
+ (u'10', 1),
+ (u'100', 1),
+ (u'11', 1),
+ (u'12', 2),
+
+=======
+Scala:
+=======
+var rdd_pwd = sc.textFile("file:/tmp/passwd")
+
+var rdd_palabra = rdd_pwd.flatMap( reg => reg.split("\\W+") )
+SALIDA: res0: Array[String] = Array(root, x, 0, 0, root)
+
+var rdd_uno = rdd_palabra.map( reg => (reg,1) )
+SALIDA: res1: Array[(String, Int)] = Array((root,1), (x,1), (0,1), (0,1), (root,1))
+
+var rdd_arrayUnos = rdd_uno.groupByKey()
+SALIDA: res2: Array[(String, Iterable[Int])] = Array((499,CompactBuffer(1)), (lp,CompactBuffer(1, 1)), (488,CompactBuffer(1, 1)), (4,CompactBuffer(1, 1)), (nologin,CompactBuffer(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)))
+
+var rdd_ordenado = rdd_arrayUnos.sortByKey()
+SALIDA: res3: Array[(String, Iterable[Int])] = Array((0,CompactBuffer(1, 1, 1, 1, 1, 1)), (1,CompactBuffer(1, 1)), (10,CompactBuffer(1)), (100,CompactBuffer(1)), (11,CompactBuffer(1)))
+
+def sumar(valores: Iterable[Int]): Int = {
+	var suma = 0
+	for (valor <- valores){
+		suma += valor.toInt
+	}
+	return suma
+}
+
+var rdd_suma_ordenada = rdd_ordenado.mapValues(sumar)
+
+rdd_suma_ordenada.foreach(println)
+(0,6)
+(1,2)
+(10,1)
+(100,1)
+(11,1)
+(12,2)
+(13,1)
+(14,2)
+(170,2)
+(2,2)
+(27,2)
+(3,1)
+

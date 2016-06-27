@@ -1,0 +1,14 @@
+// Cargamos fichero
+var rdd_device = sc.textFile("file:/home/training/training_materials/data/devicestatus.txt")
+
+// Pasamos linea a array partiendo en | y nos quedamos solo los que tienen 14 campos
+var rdd_campos = rdd_device.map( reg => reg.split(reg(19)) ).filter( reg => reg.length == 14 )
+
+// solo nos quedamos con campos:
+// 1-fecha, 2-modelo, 3-idDevice, 13-latitud, 14 longitud
+var rdd_campos_necesarios = rdd_campos.map( reg => (reg(0) + "," + reg(1).split(" ")(0) + "," + reg(2) + "," + reg(12) + "," + reg(13)) )
+
+// Guardamos en fichero
+rdd_campos_necesarios.saveAsTextFile("/loudacre/devicestatus_etl-scala")
+
+

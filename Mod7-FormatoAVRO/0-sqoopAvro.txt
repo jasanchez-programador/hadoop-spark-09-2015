@@ -1,0 +1,17 @@
+-------------------------------------------------
+--> Subir datos FORMATO AVRO a HDFS con sqoop <--
+-------------------------------------------------
+
+*** INCOMPATIBLE CON --hive-import ***
+
+$ sqoop import 
+		--connect jdbc:mysql://localhost/loudacre 
+		--username training
+		--password training 
+		--table webpage 
+		--as-avrodatafile 
+		--warehouse-dir /user/training/julio/comoAvro 
+
+1) Sube a hdfs los datos en binario avro
+2) Crear en local al unix el fichero sqoop_import_NOMBRE-TABLA.avsc con el
+json del formato

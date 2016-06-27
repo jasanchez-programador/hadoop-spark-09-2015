@@ -1,0 +1,21 @@
+Obtener el nombre de los usuarios que usan bash
+
+======
+SPARK:
+=======
+rdd_pwd = sc.textFile("julio/passwd")
+rdd_bash = rdd_pwd.filter( lambda reg: reg.endswith("bash") )
+rdd_name = rdd_bash.map( lambda reg: reg.split(":")[0] )
+rdd_sort = rdd_name.sortBy( lambda reg: reg )
+rdd_sort.collect()
+
+ut[24]: [u'hdfs', u'mapred', u'mysql', u'root', u'training', u'yarn']
+
+=======
+SCALA:
+=======
+var rdd_pwd = sc.textFile("julio/passwd").filter( reg => reg.endswith("bash") ).map( reg => reg.split(":")(0) ).sortBy( reg => reg )
+rdd_pwd.collect()
+
+res4: Array[String] = Array(hdfs, mapred, mysql, root, training, yarn)
+

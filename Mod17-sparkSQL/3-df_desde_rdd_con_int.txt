@@ -1,0 +1,76 @@
+Crear DataFrame de los usuarios del sistema a partir de rdd
+===========================================================
+devolver nombre, uid, home, shell de los usuarios con bash
+===========================================================
+
+======
+Spark:
+======
+
+# Crear contexto SQL
+sqlCtx = SQLContext(sc)
+
+# Importar tipos de datos
+from pyspark.sql.types import *
+
+# Cargar RDD del passwd
+rdd_pwd = sc.textFile('file:/etc/passwd')
+
+# Converitr String en Array
+rdd_pwd_array = rdd_pwd.map( lambda reg: reg.split(':') )
+
+# Que cada elemento del array tenga su propio tipo de datos
+rdd_pwd_array2 = rdd_pwd_array.map(lambda r: [r[0],r[1],int(r[2]),int(r[3]),r[4],r[5],r[6]])
+
+# Crear esquema con los tipos de datos adecuados
+esquema = StructType([StructField('name',StringType(),True),
+					  StructField('x',StringType(),True),
+					  StructField('uid',IntegerType(),True),
+					  StructField('gid',IntegerType(),True),
+					  StructField('gecos',StringType(),True),
+					  StructField('home',StringType(),True),
+					  StructField('shell',StringType(),True)])
+
+# Crear DataFrame desde rdd 
+df_pwd = sqlCtx.createDataFrame(rdd_pwd_array2,esquema)
+
+# Pintar schema del DataFrame
+df_pwd.printSchema()
+root
+ |-- nombre: string (nullable = true)
+ |-- x: string (nullable = true)
+ |-- uid: string (nullable = true)
+ |-- gid: string (nullable = true)
+ |-- gecos: string (nullable = true)
+ |-- home: string (nullable = true)
+ |-- shell: string (nullable = true)
+
+# Ver datos del DataFrame
+df_pwd.show()
+nombre        x uid gid gecos                home                 shell         
+root          x 0   0   root                 /root                /bin/bash     
+bin           x 1   1   bin                  /bin                 /sbin/nologin 
+daemon        x 2   2   daemon               /sbin                /sbin/nologin 
+adm           x 3   4   adm                  /var/adm             /sbin/nologin 
+
+# Ver datos del RDD que sustenta al DataFrame
+df_pwd.collect()
+[Row(nombre=u'root', x=u'x', uid=u'0', gid=u'0', gecos=u'root', home=u'/root', shell=u'/bin/bash'),
+ Row(nombre=u'bin', x=u'x', uid=u'1', gid=u'1', gecos=u'bin', home=u'/bin', shell=u'/sbin/nologin'),
+ Row(nombre=u'daemon', x=u'x', uid=u'2', gid=u'2', gecos=u'daemon', home=u'/sbin', shell=u'/sbin/nologin'),
+ Row(nombre=u'adm', x=u'x', uid=u'3', gid=u'4', gecos=u'adm', home=u'/var/adm', shell=u'/sbin/nologin'),
+
+# Hacer la select ... where para quedarnos con las filas y columnas necesarias
+df_pwd_bash = df_pwd.select("nombre","uid","home","shell").where("shell like '%bash'")
+
+# guardarlo en formato:
+# json
+df_pwd_bash.save('/user/training/julio/dataframe_bash_json','json')
+# parquet
+df_pwd_bash.save('/user/training/julio/dataframe_bash_parquet','parquet')
+# avro --> NO ESTA LA LIBRERIA DE databricks
+
+
+======
+Scala:
+======

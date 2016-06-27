@@ -1,0 +1,5 @@
+esto es una prueba
+para ver un ejemplo de la media de las palabras
+pongo varias lineas
+con el fin de especificar varias particiones
+e intentar ver el reparticionado entre stages

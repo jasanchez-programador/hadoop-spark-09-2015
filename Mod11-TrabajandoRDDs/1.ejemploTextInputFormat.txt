@@ -1,0 +1,29 @@
+Ejemplo de como llamar a otros formatos aunque lo hacemos con formato de texto
+Una diferencia con respecto al de por defecto, si carga clave como offset
+
+=======
+python:
+=======
+rdd_pwd = sc.newAPIHadoopFile("/user/training/julio/passwd","org.apache.hadoop.mapreduce.lib.input.TextInputFormat","org.apache.hadoop.io.Text","org.apache.hadoop.io.LongWritable")
+rdd_pwd.take(5)
+
+[(0, u'root:x:0:0:root:/root:/bin/bash'),
+ (32, u'bin:x:1:1:bin:/bin:/sbin/nologin'),
+ (65, u'daemon:x:2:2:daemon:/sbin:/sbin/nologin'),
+ (105, u'adm:x:3:4:adm:/var/adm:/sbin/nologin'),
+ (142, u'lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin')]
+
+
+=======
+scala:
+=======
+import org.apache.hadoop.io.LongWritable
+import org.apache.hadoop.io.Text
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
+val rdd_pwd = sc.newAPIHadoopFile("/user/training/julio/passwd", classOf[TextInputFormat], classOf[LongWritable], classOf[Text])
+
+rdd_pwd.foreach(print)
+(0,root:x:0:0:root:/root:/bin/bash)(32,bin:x:1:1:bin:/bin:/sbin/nologin)(65,daemon:x:2:2:daemon:/sbin:/sbin/nologin)(105,adm:x:3:4:adm:/var/adm:/sbin/nologin)(142,lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin)
+
+
+

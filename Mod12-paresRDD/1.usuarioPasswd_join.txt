@@ -1,0 +1,79 @@
+devolver nombre_usuario, UID, password uniendo passwd y shadow
+===============================================================
+
+=======
+Spark:
+=======
+// cargo passwd y shadow
+rdd_pwd = sc.textFile("file:/tmp/passwd")
+rdd_shadow = sc.textFile("file:/tmp/shadow")
+
+// genero clave/valor con keyBy
+rdd_pwd_pares = rdd_pwd.keyBy( lambda reg: reg.split(":")[0] )
+SALIDA: [(u'root', u'root:x:0:0:root:/root:/bin/bash')]
+
+rdd_shadow_pares = rdd_shadow.keyBy( lambda reg: reg.split(":")[0] )
+SALIDA: [(u'root', u'root:$6$CP4e3JK5jTGN/PO0$HQYO5rNiws5CeMRUyZOr8DsnmfUm9kpceP1K.6jrd/8VZHMBM.Y8X3.0cHkZQw2J2eyv1nMw3jxztKLWOmF/a1:16546:0:99999:7:::')]
+
+// Junto ambos dataset por la clave con join
+rdd_join = rdd_pwd_pares.join(rdd_shadow_pares)
+SALIDA: [(u'bin', (u'bin:x:1:1:bin:/bin:/sbin/nologin', u'bin:*:15980:0:99999:7:::'))]
+
+// reformateo el clave/valor dentro del valor del primer clave/valor
+rdd_join_arrays = rdd_join.map( lambda (clave,(valorA,valorB)): (clave,valorA.split(':'),valorB.split(':') ) )
+SALIDA: [(u'bin',
+  [u'bin', u'x', u'1', u'1', u'bin', u'/bin', u'/sbin/nologin'],
+  [u'bin', u'*', u'15980', u'0', u'99999', u'7', u'', u'', u''])]
+
+// Del ARRAY1 me quedo con UID
+// Del ARRAY2 me quedo con la PASSWORD
+rdd_usuario_pass = rdd_join_arrays.map( lambda (clave,valor1,valor2): (clave,valor1[2]+ ":" + valor2[1]) )
+
+rdd_usuario_pass.collect()
+out[32]: 
+[(u'bin', u'1:*'),
+ (u'flume', u'491:!!'),
+ (u'tcpdump', u'72:!!'),
+ (u'postfix', u'89:!!'),
+ (u'solr', u'492:!!'),
+ (u'games', u'12:*'),
+ (u'operator', u'11:*'),
+ (u'root', u'0:$6$CP4e3JK5jTGN/PO0$HQYO5rNiws5CeMRUyZOr8DsnmfUm9kpceP1K.6jrd/8VZHMBM.Y8X3.0cHkZQw2J2eyv1nMw3jxztKLWOmF/a1'),
+ (u'ftp', u'14:*')]
+
+======
+Scala:
+======
+var rdd_pwd = sc.textFile("file:/tmp/passwd")
+var rdd_shadow = sc.textFile("file:/tmp/shadow")
+
+var rdd_pwd_pares = rdd_pwd.keyBy( reg => reg.split(":")(0) )
+SALIDA: res0: Array[(String, String)] = Array((root,root:x:0:0:root:/root:/bin/bash))
+
+var rdd_shadow_pares = rdd_shadow.keyBy( reg => reg.split(":")(0) )
+SALIDA: res1: Array[(String, String)] = Array((root,root:$6$CP4e3JK5jTGN/PO0$HQYO5rNiws5CeMRUyZOr8DsnmfUm9kpceP1K.6jrd/8VZHMBM.Y8X3.0cHkZQw2J2eyv1nMw3jxztKLWOmF/a1:16546:0:99999:7:::))
+
+var rdd_join = rdd_pwd_pares.join(rdd_shadow_pares)
+SALIDA: res2: Array[(String, (String, String))] = Array((lp,(lp:x:4:7:lp:/var/spool/lpd:/sbin/nologin,lp:*:15980:0:99999:7:::)))
+
+var rdd_join_arrays = rdd_join.map( par  => (par._1,par._2._1.split(':'),par._2._2.split(':') ) )
+SALIDA: res3: Array[(String, Array[String], Array[String])] = Array((lp,Array(lp, x, 4, 7, lp, /var/spool/lpd, /sbin/nologin),Array(lp, x, 4, 7, lp, /var/spool/lpd, /sbin/nologin)))
+
+var rdd_usuario_pass = rdd_join_arrays.map( par => (par._1,par._2(2)+ ":" + par._3(1)) )
+
+rdd_usuario_pass.foreach(println)
+(lp,4:*)
+(dbus,81:!!)
+(adm,3:*)
+(hive,493:!!)
+(sshd,74:!!)
+(ftp,14:*)
+(avahi-autoipd,170:!!)
+(training,500:$6$rh.UN4TQ$yGiyU9yIo5LVRqRykPNY/Nm6gkM50Bwbjx6noXJsDqRZdBW5NcKjiRZQ6kozFLk10oGdPEiKKQkpFB7dEvAkr0)
+(zookeeper,498:!!)
+(mysql,27:!!)
+(solr,492:!!)
+(operator,11:*)
+(root,0:$6$CP4e3JK5jTGN/PO0$HQYO5rNiws5CeMRUyZOr8DsnmfUm9kpceP1K.6jrd/8VZHMBM.Y8X3.0cHkZQw2J2eyv1nMw3jxztKLWOmF/a1)
+(daemon,2:*)
+

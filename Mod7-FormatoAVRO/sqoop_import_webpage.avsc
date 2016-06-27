@@ -1,0 +1,22 @@
+{
+  "type" : "record",
+  "name" : "sqoop_import_webpage",
+  "doc" : "Sqoop import of webpage",
+  "fields" : [ {
+    "name" : "web_page_num",
+    "type" : [ "int", "null" ],
+    "columnName" : "web_page_num",
+    "sqlType" : "4"
+  }, {
+    "name" : "web_page_file_name",
+    "type" : [ "string", "null" ],
+    "columnName" : "web_page_file_name",
+    "sqlType" : "12"
+  }, {
+    "name" : "associated_files",
+    "type" : [ "string", "null" ],
+    "columnName" : "associated_files",
+    "sqlType" : "12"
+  } ],
+  "tableName" : "webpage"
+}

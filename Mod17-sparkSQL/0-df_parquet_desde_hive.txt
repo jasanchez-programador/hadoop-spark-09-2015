@@ -1,0 +1,16 @@
+# Desde HIVE creamos tabla en formato parquet
+hive> create table t1_parquet(id int, name string)
+	  stored as parquet;
+
+hive> insert into table t1_parquet
+      select * from t1;
+
+# Copiamos fichero configuracion de hive a spark para encontrar metastore
+$ sudo cp /etc/hive/conf/hive-site.xml /etc/spark/conf
+
+# Nos conectamos a pyspark y creamos el DataFrame
+
+df_t1 = sqlCtx.parquetFile("/user/hive/warehouse/t1_parquet/000000_0")
+
+# guardamos como json en HDFS
+df_t.save("/user/training/t1.json","json")

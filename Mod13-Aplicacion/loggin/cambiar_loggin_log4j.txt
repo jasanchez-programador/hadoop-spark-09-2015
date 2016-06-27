@@ -1,0 +1,5 @@
+Para cambiar a nivel de job el verbose de log apuntamos a otro fichero log4jproperties con nivel DEBUG:
+-------------------------------------------------------------------------------------------------------
+$ spark-submit  --driver-java-options "-Dlog4j.configuration=file:///etc/spark/conf/log4j.properties.DEBUG" 
+				/home/training/julio/Mod13-Aplicacion/1.python/3.contarPalabras_passwd.py 
+				/loudacre/weblogs/*

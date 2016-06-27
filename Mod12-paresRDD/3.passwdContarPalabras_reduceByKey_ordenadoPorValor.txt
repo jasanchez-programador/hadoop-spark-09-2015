@@ -1,0 +1,89 @@
+Contar palabras sobre el passwd:
+================================
+
+// cargamos fichero
+rdd_pwd = sc.textFile("file:/tmp/passwd")
+
+// Partimos   registro         == linea
+// en         muchos_registros == palabras
+import re
+rdd_palabras = rdd_pwd.flatMap( lambda reg: re.split("\W+",reg) )
+SALIDA: [u'root', u'x', u'0', u'0', u'root']
+
+// añadimos a cada palabra un 1
+rdd_uno = rdd_palabras.map( lambda reg: (reg,1) )
+SALIDA: [(u'root', 1), (u'x', 1), (u'0', 1), (u'0', 1), (u'root', 1)]
+
+// para cada clave, vamos sumanado los unos
+// de 2 en 2 registros hasta acabar con los registros de cada clave
+// asociativa y conmutativa
+rdd_suma = rdd_uno.reduceByKey( lambda valorReg1, valorReg2 : (valorReg1 + valorReg2 ) )
+SALIDA: [(u'separated', 1),
+ (u'owner', 1),
+ (u'Privilege', 1),
+ (u'485', 1),
+ (u'68', 2),
+ (u'498', 1),
+ (u'hive', 2),
+ (u'shutdown', 3),
+ (u'operator', 2),
+ (u'message', 1)]
+
+// Damos la vuelta ==> de (clave, valor) a (valor, clave)
+// solo claves
+rdd_suma_claves = rdd_suma.keys()
+// solo valores
+rdd_suma_valores = rdd_suma.values()
+// unimos. ( valor/clave )
+rdd_suma_invertida = rdd_suma_valores.zip(rdd_suma_claves)
+SALIDA:  [(1, u'separated'), (1, u'owner'), (1, u'Privilege'), (1, u'485'), (2, u'68')]
+
+// de la fase de SHUFFLE AND SORT
+// solo hacemos la fase sort
+// Ordenamos por valor DESCENDENTEMENTE
+rdd_suma_invertida_desc = rdd_suma_invertida.sortByKey(ascendent=False)
+
+rdd_suma_invertida_desc.collect()
+Out[43]: 
+[(40, u'x'),
+ (37, u'sbin'),
+ (31, u'nologin'),
+ (24, u'var'),
+ (16, u'lib'),
+ (10, u'bin'),
+ (6, u'bash'),
+ (6, u'0'),
+ (4, u'spool'),
+ (4, u'root'),
+
+=======
+Scala:
+=======
+var rdd_pwd = sc.textFile("file:/tmp/passwd")
+
+var rdd_palabras = rdd_pwd.flatMap( reg => reg.split("\\W+") )
+SALIDA: res0: Array[String] = Array(root)
+
+var rdd_uno = rdd_palabras.map( reg => (reg,1) )
+SALIDA: res1: Array[(String, Int)] = Array((root,1))
+
+var rdd_suma = rdd_uno.reduceByKey( (valorReg1, valorReg2)  => (valorReg1 + valorReg2 ) )
+SALIDA: res2: Array[(String, Int)] = Array((499,1))
+
+var rdd_suma_claves = rdd_suma.keys
+var rdd_suma_valores = rdd_suma.values
+var rdd_suma_invertida = rdd_suma_valores.zip(rdd_suma_claves)
+SALIDA: 4: Array[(Int, String)] = Array((1,499), (2,lp), (2,488), (2,4), (31,nologin))
+
+var rdd_suma_invertida_desc = rdd_suma_invertida.sortByKey(ascending=false)
+
+rdd_suma_invertida_desc.foreach(println)
+(40,x)
+(37,sbin)
+(31,nologin)
+(24,var)
+(16,lib)
+(10,bin)
+(6,bash)
+(6,0)
+(4,root)

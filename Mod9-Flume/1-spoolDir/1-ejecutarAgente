@@ -1,0 +1,7 @@
+Ejecutar Agente:
+
+flume-ng agent \
+	--conf /etc/flume-ng/conf \
+	--conf-file /home/training/julio/Mod9-Flume/1-spoolDir/spoolDir_HDFS.conf  \
+	--name agente1 \
+	-Dflume.root.logger=INFO,console

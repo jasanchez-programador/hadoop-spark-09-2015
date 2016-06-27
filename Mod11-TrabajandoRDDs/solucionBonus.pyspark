@@ -1,0 +1,15 @@
+// Cargamos fichero
+rdd_device = sc.textFile("file:/home/training/training_materials/data/devicestatus.txt")
+
+// Pasamos linea a array partiendo en | y nos quedamos solo los que tienen 14 campos
+rdd_campos = rdd_device.map( lambda reg: reg.split(reg[19]) ).filter( lambda reg: len(reg) == 14 )
+
+// solo nos quedamos con campos:
+// 1-fecha, 2-modelo, 3-idDevice, 13-latitud, 14 longitud
+rdd_campos_necesarios = rdd_campos.map( lambda reg: (reg[0] + "," + reg[1].split(" ")[0] + "," + reg[2] + "," + reg[12] + "," + reg[13]) )
+
+
+// Guardamos en fichero
+rdd_campos_necesarios.saveAsTextFile("/loudacre/devicestatus_etl_python")
+
+

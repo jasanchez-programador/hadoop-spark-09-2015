@@ -1,0 +1,17 @@
+1.- Levantar pyspark con spark-avro
+-----------------------------------
+$ pyspark --jars /home/training/Desktop/spark-avro_2.10-2.0.1.jar --packages com.databricks:spark-avro_2.10:2.0.1
+
+
+2.-Ver tabla accounts_avro:
+---------------------------
+OPCION 1: Cargando la tabla desde spark
+******************
+* NO FUNCIONA!!! *
+******************
+	df_accounts_avro = load("/user/training/webpage","com.databricks.spar.avro")
+
+
+OPCION 2: leyendo directamente del contexto de hive
+	sqlCtx.sql("select * from accounts_avro").show()
+

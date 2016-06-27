@@ -1,0 +1,14 @@
+=======
+python:
+=======
+rdd_passwd = sc.textFile('file:/etc/passwd')
+rdd_usuarios = rdd_passwd.filter( lambda reg: reg.endswith("bash") ).map( lambda reg: reg.split(":")[0])
+rdd_usuarios.collect()
+
+======
+scala:
+======
+val rdd_passwd = sc.textFile('file:/etc/passwd')
+val rdd_usuarios = rdd_passwd.filter( reg => reg.endsWith("bash") ).map( reg => reg.split(":")(0))
+rdd_usuarios.collect()
+

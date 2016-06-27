@@ -1,0 +1,18 @@
+Como crear y ejecutar tu programa en scala
+==========================================
+1. fichero pom.xml
+	--> cambiar linea 4 <artifactId> por el nombre de tu aplicacion ==> Creara con ese nombre el JAR
+	--> cambiar linea 7 <name> por el nombre de tu aplicacion
+
+2. codigo en scala
+	src/main/scala/stubs/1.plantilla-aplicacion.scala
+	-->  Linea 5 object MiPrograma por el nombre de tu programa
+
+3. Compilar
+	dentro del directorio (esta pom.xml y src) ejecutar
+	$ mvn package
+	--> si todo correcto se crea:
+		target/fichero.jar
+
+4. Ejecutar
+	$ spark-submit --master local --class stubs.MiPrograma target/fichero.jar rutaFicheros
